@@ -1,0 +1,35 @@
+# すべての.pyファイルを許可
+!*.py
+!*.txt
+##!*.exe
+
+# その他の無視するファイルパターン
+# 例: すべてのログファイルを無視
+*.exe
+*.log
+*.jpg
+*.png
+*.mp4
+*.mp3
+*.wav
+*.avi
+*.mov
+*.mkv
+*.flv
+*.wmv
+*.webm
+*.m4v
+*.3gp
+*.mpg
+*.mpeg
+*.m2ts
+*.tmp
+*.swp
+*.bak
+*.old
+*.orig
+
+# ディレクトリを無視
+node_modules/
+dist/
+build/

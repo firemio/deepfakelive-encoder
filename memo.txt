@@ -1,0 +1,16 @@
+#### DeepFaceLiveで生成した画像と、元動画の音声を合成 ####
+
+# 注意点
+DeepFaceLive出力元を「合成後フレームまたは入力フレーム」にする事！！！
+でないと、顔が検出できない場合は、抜け番が発生する。
+
+エラーで止まると困るので、本エンコーダーでは自動補間を行う。
+
+# インストール
+pip install -r requirements.txt
+
+# ルートにffmpeg関連ファイルを配置
+ffprobe.exe
+ffmpeg.exe
+ffplay.exe
+
