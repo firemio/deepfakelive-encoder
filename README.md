@@ -9,7 +9,9 @@ DeepFaceLive出力元を「合成後フレームまたは入力フレーム」�
 # インストール
 pip install -r requirements.txt
 
-# ルートにffmpeg関連ファイルを配置
+# プロジェクトのルートにffmpeg関連ファイルを配置
+https://www.ffmpeg.org/download.html
+
 ffprobe.exe
 ffmpeg.exe
 ffplay.exe
