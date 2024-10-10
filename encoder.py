@@ -6,6 +6,7 @@ import os
 import re
 import tempfile
 import shutil
+import time
 
 def select_folder():
     folder_path = filedialog.askdirectory()
@@ -147,6 +148,9 @@ def extract_frames(video_file, frame_numbers, frame_rate, output_folder):
 
 def encode_video(input_folder, output_file, encode_type, frame_rate, audio_video, gap_fill_method):
     try:
+        # エンコード開始時刻を記録
+        start_time = time.time()
+
         file_count, _, _, numbers, gaps = get_image_files_info(input_folder)
         if file_count == 0:
             raise ValueError("入力フォルダに画像ファイルが見つかりません。")
@@ -199,12 +203,13 @@ def encode_video(input_folder, output_file, encode_type, frame_rate, audio_video
 
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
 
+        total_frames = max(numbers) - min(numbers) + 1  # 総フレーム数を正しく計算
         for line in process.stdout:
             if "frame=" in line:
                 match = re.search(r"frame=\s*(\d+)", line)
                 if match:
                     frame_number = int(match.group(1))
-                    progress = max(numbers) - min(numbers) + 1
+                    progress = (frame_number / total_frames) * 100  # 進捗を正しく計算
                     progress_var.set(progress)
                     progress_bar.update()
                     current_file_label.config(text=f"現在処理中のフレーム: {frame_number}")
@@ -220,12 +225,22 @@ def encode_video(input_folder, output_file, encode_type, frame_rate, audio_video
         progress_var.set(100)
         progress_bar.update()
 
+        # エンコード終了時刻を記録
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        elapsed_time_str = f"エンコードにかかった時間: {elapsed_time:.2f}秒"
+
         if generated_frames:
-            messagebox.showinfo("完了", f"動画エンコードが完了しました。\n音声参照動画から{len(generated_frames)}枚の画像を生成しました。")
+            messagebox.showinfo("完了", f"動画エンコードが完了しました。\n音声参照動画から{len(generated_frames)}枚の画像を生成しました。\n{elapsed_time_str}")
         else:
-            messagebox.showinfo("完了", "動画エンコードが完了しました。")
+            messagebox.showinfo("完了", f"動画エンコードが完了しました。\n{elapsed_time_str}")
+
+        # エンコード完了後にボタンを再度有効化
+        encode_button.config(state=tk.NORMAL)
 
     except Exception as e:
+        # エラー発生時もボタンを再度有効化
+        encode_button.config(state=tk.NORMAL)
         messagebox.showerror("エラー", f"エンコード中にエラーが発生しました: {str(e)}")
 
 def start_encoding():
@@ -254,6 +269,10 @@ def start_encoding():
         if not result:
             return
 
+    # エンコード開始時にボタンを無効化
+    encode_button.config(state=tk.DISABLED)
+    
+    # エンコードスレッドの開始
     threading.Thread(target=encode_video, args=(input_folder, output_file, encode_type, frame_rate, audio_video, gap_fill_method)).start()
 
 # GUIのセットアップ
@@ -343,7 +362,9 @@ progress_bar.grid(column=0, row=6, sticky=(tk.W, tk.E), pady=2)
 current_file_label = ttk.Label(right_frame, text="現在処理中のフレーム: なし")
 current_file_label.grid(column=0, row=7, sticky=tk.W, pady=2)
 
-ttk.Button(right_frame, text="エンコード開始", command=start_encoding).grid(column=0, row=8, sticky=(tk.W, tk.E), pady=5)
+# エンコードボタンの作成
+encode_button = ttk.Button(right_frame, text="エンコード開始", command=start_encoding)
+encode_button.grid(column=0, row=8, sticky=(tk.W, tk.E), pady=5)
 
 # カラムの重みを設定
 main_frame.columnconfigure(0, weight=1)
@@ -357,7 +378,6 @@ style.configure('green.Horizontal.TProgressbar', background='#4caf50')
 
 # GUIの配置を調整
 progress_bar.grid(column=0, row=6, sticky=(tk.W, tk.E), pady=2)  # 全幅表示
-ttk.Button(right_frame, text="エンコード開始", command=start_encoding).grid(column=0, row=8, sticky=(tk.W, tk.E), pady=5)  # 全幅表示
 
 # カラムの重みを設定
 right_frame.columnconfigure(0, weight=1)  # 右カラムの重みを設定
